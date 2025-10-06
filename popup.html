@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Twitch FlowSwitch</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        width: 360px;
+        min-height: 500px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Inter", sans-serif;
+        background: linear-gradient(
+          135deg,
+          #1a1a2e 0%,
+          #16213e 50%,
+          #0f3460 100%
+        );
+        color: #fff;
+        overflow-x: hidden;
+      }
+
+      .bg-animated {
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(
+            circle at 20% 30%,
+            rgba(138, 43, 226, 0.15) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 80% 70%,
+            rgba(75, 0, 130, 0.15) 0%,
+            transparent 50%
+          );
+        animation: bgFloat 20s ease-in-out infinite;
+        pointer-events: none;
+      }
+
+      @keyframes bgFloat {
+        0%,
+        100% {
+          transform: translate(0, 0) rotate(0deg);
+        }
+        50% {
+          transform: translate(10px, -10px) rotate(2deg);
+        }
+      }
+
+      .container {
+        position: relative;
+        padding: 24px;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 24px;
+        animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #9146ff, #772ce8);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        box-shadow: 0 4px 12px rgba(145, 70, 255, 0.3);
+      }
+
+      h1 {
+        font-size: 20px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #fff, #e0e0e0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .subtitle {
+        font-size: 12px;
+        color: #9ca3af;
+        font-weight: 500;
+      }
+
+      .status-card {
+        background: rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 16px;
+        animation: fadeIn 0.6s ease-out;
+        animation-fill-mode: both;
+        transition: all 0.3s ease;
+      }
+
+      .status-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      }
+
+      .status-card:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .status-card:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .status-card:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+
+      .card-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #e5e7eb;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+      }
+
+      .status-badge.active {
+        background: linear-gradient(135deg, #10b981, #059669);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      }
+
+      .status-badge.secondary {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+      }
+
+      .status-badge.inactive {
+        background: rgba(107, 114, 128, 0.5);
+      }
+
+      .status-badge.error {
+        background: rgba(239, 68, 68, 0.5);
+      }
+
+      .pulse {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.5;
+          transform: scale(0.8);
+        }
+      }
+
+      .video-info {
+        display: grid;
+        gap: 12px;
+      }
+
+      .video-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+      }
+
+      .video-row:hover {
+        background: rgba(0, 0, 0, 0.3);
+        transform: translateX(4px);
+      }
+
+      .video-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #9ca3af;
+        font-weight: 500;
+      }
+
+      .video-icon {
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+      }
+
+      .video-details {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .resolution {
+        font-size: 13px;
+        font-weight: 600;
+        color: #f3f4f6;
+      }
+
+      .audio-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+
+      .audio-badge.muted {
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+
+      .audio-badge.sound {
+        background: rgba(16, 185, 129, 0.15);
+        color: #6ee7b7;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+
+      .countdown-display {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        background: rgba(245, 158, 11, 0.1);
+        border: 2px solid rgba(245, 158, 11, 0.3);
+        border-radius: 12px;
+        margin-top: 12px;
+      }
+
+      .countdown-time {
+        font-size: 24px;
+        font-weight: 700;
+        color: #fbbf24;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 2px;
+      }
+
+      .info-text {
+        font-size: 11px;
+        color: #6b7280;
+        line-height: 1.5;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        border-left: 3px solid #9146ff;
+        margin-top: 16px;
+      }
+
+      .divider {
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.1),
+          transparent
+        );
+        margin: 16px 0;
+      }
+
+      @keyframes shimmer {
+        0% {
+          background-position: -200px 0;
+        }
+        100% {
+          background-position: 200px 0;
+        }
+      }
+
+      .loading {
+        animation: shimmer 2s infinite;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.1),
+          transparent
+        );
+        background-size: 200px 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-animated"></div>
+
+    <div class="container">
+      <div class="header">
+        <div class="logo">
+          <div class="logo-icon">⚡</div>
+          <h1>FlowSwitch</h1>
+        </div>
+        <div class="subtitle">Twitch Ad Stream Manager</div>
+      </div>
+
+      <div class="status-card">
+        <div class="card-header">
+          <div class="card-title"><span>🎯</span> Current Status</div>
+          <div class="status-badge inactive" id="activePill">
+            <div class="pulse"></div>
+            <span>Checking...</span>
+          </div>
+        </div>
+        <div
+          class="status-badge inactive"
+          id="adPill"
+          style="width: 100%; justify-content: center"
+        >
+          <span>Waiting...</span>
+        </div>
+      </div>
+
+      <div class="status-card">
+        <div class="card-header">
+          <div class="card-title"><span>📺</span> Players</div>
+        </div>
+
+        <div class="video-info">
+          <div class="video-row">
+            <div class="video-label">
+              <span class="video-icon">🎬</span>
+              <span>Primary</span>
+            </div>
+            <div class="video-details">
+              <span class="resolution" id="mainRes">–</span>
+              <span class="audio-badge muted" id="mainMuted">muted</span>
+            </div>
+          </div>
+
+          <div class="video-row">
+            <div class="video-label">
+              <span class="video-icon">📹</span>
+              <span>Secondary</span>
+            </div>
+            <div class="video-details">
+              <span class="resolution" id="secRes">–</span>
+              <span class="audio-badge muted" id="secMuted">muted</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-card" id="countdownCard" style="display: none">
+        <div class="card-header">
+          <div class="card-title"><span>⏱️</span> Time Remaining</div>
+        </div>
+        <div class="countdown-display">
+          <div class="countdown-time" id="countdown">–</div>
+        </div>
+      </div>
+
+      <div class="info-text">
+        💡 Only works on Twitch pages with secondary video over the chat
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
