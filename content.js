@@ -142,7 +142,19 @@
     };
   }
 
+  function hiddenHtmlAd () {
+    const main = document.querySelectorAll('[data-test-selector="sda-wrapper"]');
+    main.forEach(ad => {
+      ad.style.display = 'none';
+    });
+    const secondary = document.querySelectorAll('[id="creative-wrapper"]');
+    secondary.forEach(ad => {
+      ad.style.display = 'none';
+    });
+  }
+
   setInterval(() => {
+    hiddenHtmlAd();
     if (!main || !sec || !document.contains(main) || !document.contains(sec))
       getEls();
 
