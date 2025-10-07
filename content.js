@@ -2,6 +2,11 @@
   let adOn = false;
   let main, sec, overlay, secParent, secNext;
   let badge;
+  
+  let bannerAdsBlocked = 0;
+  let streamAdsBlocked = 0;
+  let streamAdsNotBlocked = 0;
+  let lastAdState = null;
 
   const selMain = "[data-a-target='video-ref'] video";
   const selSec = "video[id]";
@@ -57,6 +62,8 @@
     const m = text.match(/(\d{1,2}:\d{2})/);
     return m ? m[1] : "";
   }
+
+
 
   function startAd() {
     if (adOn) return;
@@ -125,6 +132,9 @@
       adCountdownText: countdown,
       adRemaining: parseTimeFromCountdown(countdown),
       active: adOn ? "secondary" : "primary",
+      bannerAdsBlocked,
+      streamAdsBlocked,
+      streamAdsNotBlocked,
       main: main
         ? {
             w: main.videoWidth || 0,
@@ -143,14 +153,28 @@
   }
 
   function hiddenHtmlAd () {
+    let newBlocked = 0;
+    
     const main = document.querySelectorAll('[data-test-selector="sda-wrapper"]');
     main.forEach(ad => {
-      ad.style.display = 'none';
+      if (ad.style.display !== 'none' && !ad.hasAttribute('data-flowswitch-hidden')) {
+        ad.style.display = 'none';
+        ad.setAttribute('data-flowswitch-hidden', 'true');
+        newBlocked++;
+      }
     });
+    
     const secondary = document.querySelectorAll('[id="creative-wrapper"]');
     secondary.forEach(ad => {
-      ad.style.display = 'none';
+      if (ad.style.display !== 'none' && !ad.hasAttribute('data-flowswitch-hidden')) {
+        ad.style.display = 'none';
+        ad.setAttribute('data-flowswitch-hidden', 'true');
+        newBlocked++;
+      }
     });
+    
+    bannerAdsBlocked += newBlocked;
+    return newBlocked;
   }
 
   setInterval(() => {
@@ -161,12 +185,25 @@
     const hasAd = !!document.querySelector(selAd);
     if (hasAd) {
       startAd();
+      
+      if (lastAdState !== hasAd) {
+        if (adOn) {
+          streamAdsBlocked++;
+        } else {
+          streamAdsNotBlocked++;  
+        }
+        lastAdState = hasAd;
+      }
+      
       if (badge && adOn) {
         const t = parseTimeFromCountdown(getAdCountdownText()) || "…";
         badge.textContent = `FlowSwitch: playing secondary • ${t}`;
       }
     } else {
       endAd();
+      if (lastAdState !== hasAd) {
+        lastAdState = hasAd;
+      }
     }
   }, 995);
 

@@ -26,19 +26,25 @@ async function fetchStatus() {
     $("secRes").textContent = "–";
     $("countdown").textContent = "–";
     $("countdownCard").style.display = "none";
-
+    
     $("mainMuted").textContent = "muted";
     $("mainMuted").className = "audio-badge muted";
     $("secMuted").textContent = "muted";
     $("secMuted").className = "audio-badge muted";
+    
+    $("bannerBlocked").textContent = "0";
+    $("streamBlocked").textContent = "0";
+    $("streamNotBlocked").textContent = "0";
     return;
-  }
-
-  chrome.tabs.sendMessage(tab.id, { type: "GET_STATUS" }, (resp) => {
+  }  chrome.tabs.sendMessage(tab.id, { type: "GET_STATUS" }, (resp) => {
     if (!resp) {
       updateStatusBadge($("activePill"), "No response", "error");
       $("adPill").innerHTML = "<span>Connection error</span>";
       $("adPill").className = "status-badge error";
+      
+      $("bannerBlocked").textContent = "0";
+      $("streamBlocked").textContent = "0";
+      $("streamNotBlocked").textContent = "0";
       return;
     }
 
@@ -85,6 +91,10 @@ async function fetchStatus() {
 
     const countdownText = resp.adRemaining || resp.adCountdownText || "–";
     $("countdown").textContent = countdownText;
+
+    $("bannerBlocked").textContent = resp.bannerAdsBlocked || 0;
+    $("streamBlocked").textContent = resp.streamAdsBlocked || 0;
+    $("streamNotBlocked").textContent = resp.streamAdsNotBlocked || 0;
   });
 }
 
