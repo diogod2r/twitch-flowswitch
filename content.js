@@ -189,6 +189,7 @@
     if (videoRef) {
       videoRef.setAttribute('style', 'position: relative;');
     }
+    document.querySelector(".player-overlay-background")?.remove();
     main.muted = false;
     
     bannerAdsBlocked += newBlocked;
