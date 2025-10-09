@@ -189,7 +189,7 @@
     if (videoRef) {
       videoRef.setAttribute('style', 'position: relative;');
     }
-    document.querySelector(".player-overlay-background")?.remove();
+    document.querySelector(".video-player__overlay")?.querySelector(".player-overlay-background")?.setAttribute('style', 'display: none !important;');
 
     bannerAdsBlocked += newBlocked;
     return newBlocked;
