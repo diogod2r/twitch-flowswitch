@@ -64,6 +64,6 @@ Join us on GitHub and help make FlowSwitch even smoother.
 
 ---
 
-💡 **Category:** Communication
+💡 **Category:** Entertainment
 🌍 **Language:** English
 🔧 **Version:** 1.0.1
