@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Twitch FlowSwitch",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Switches between primary and secondary video in paid presentations. Lets you keep watching the stream and supporting your creator.",
   "icons": {
     "16": "icons/icon16.png",

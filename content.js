@@ -90,8 +90,12 @@
     b.style.display = "inline-block";
     b.textContent = "FlowSwitch: playing secondary • …";
 
+    if (sec) {
+      sec.controls = true;
+      sec.muted = false;
+      sec.setAttribute('data-flowswitch-original-controls', sec.hasAttribute('controls') ? 'true' : 'false');
+    }
     if (main) main.muted = true;
-    if (sec) sec.muted = false;
 
     adOn = true;
     console.info(
@@ -111,7 +115,15 @@
       main.style.visibility = "";
       main.muted = false;
     }
-    if (sec) sec.muted = true;
+    if (sec) {
+      sec.muted = true;
+      const originalControls = sec.getAttribute('data-flowswitch-original-controls');
+      if (originalControls === 'false') {
+        sec.controls = false;
+        sec.removeAttribute('controls');
+      }
+      sec.removeAttribute('data-flowswitch-original-controls');
+    }
     if (overlay) overlay.style.display = "none";
     if (badge) badge.style.display = "none";
 
@@ -155,8 +167,8 @@
   function hiddenHtmlAd () {
     let newBlocked = 0;
     
-    const main = document.querySelectorAll('[data-test-selector="sda-wrapper"]');
-    main.forEach(ad => {
+    const mainElement = document.querySelectorAll('[data-test-selector="sda-wrapper"]');
+    mainElement.forEach(ad => {
       if (ad.style.display !== 'none' && !ad.hasAttribute('data-flowswitch-hidden')) {
         ad.style.display = 'none';
         ad.setAttribute('data-flowswitch-hidden', 'true');
@@ -164,14 +176,20 @@
       }
     });
     
-    const secondary = document.querySelectorAll('[id="creative-wrapper"]');
-    secondary.forEach(ad => {
+    const secondaryElement = document.querySelectorAll('[id="creative-wrapper"]');
+    secondaryElement.forEach(ad => {
       if (ad.style.display !== 'none' && !ad.hasAttribute('data-flowswitch-hidden')) {
         ad.style.display = 'none';
         ad.setAttribute('data-flowswitch-hidden', 'true');
         newBlocked++;
       }
     });
+    
+    const videoRef = document.querySelector('[data-a-target="video-ref"]');
+    if (videoRef) {
+      videoRef.setAttribute('style', 'position: relative;');
+    }
+    main.muted = false;
     
     bannerAdsBlocked += newBlocked;
     return newBlocked;
