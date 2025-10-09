@@ -196,10 +196,10 @@
   }
 
   setInterval(() => {
+    hiddenHtmlAd();
     if (!main || !sec || !document.contains(main) || !document.contains(sec))
       getEls();
     
-    hiddenHtmlAd();
     const hasAd = !!document.querySelector(selAd);
     if (hasAd) {
       startAd();
